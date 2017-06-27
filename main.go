@@ -67,5 +67,7 @@ func main() {
 	}
 	defer dest.Close()
 
-	io.Copy(dest, src)
+	if _, err := io.Copy(dest, src); err != nil {
+		log.Fatal(err)
+	}
 }
