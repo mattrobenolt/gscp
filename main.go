@@ -22,20 +22,20 @@ func splitGsPath(path string) (string, string) {
 	return bits[0], bits[1]
 }
 
-func readerForPath(path string, client *storage.Client) (io.ReadCloser, error) {
+func readerForPath(path string, client *storage.Client, ctx context.Context) (io.ReadCloser, error) {
 	if !isGsPath(path) {
 		return os.Open(path)
 	}
 	bucket, object := splitGsPath(path)
-	return client.Bucket(bucket).Object(object).NewReader(context.Background())
+	return client.Bucket(bucket).Object(object).NewReader(ctx)
 }
 
-func writerForPath(path string, client *storage.Client) (io.WriteCloser, error) {
+func writerForPath(path string, client *storage.Client, ctx context.Context) (io.WriteCloser, error) {
 	if !isGsPath(path) {
 		return os.Create(path)
 	}
 	bucket, object := splitGsPath(path)
-	return client.Bucket(bucket).Object(object).NewWriter(context.Background()), nil
+	return client.Bucket(bucket).Object(object).NewWriter(ctx), nil
 }
 
 func main() {
@@ -49,19 +49,20 @@ func main() {
 		log.Fatal("!! missing ", CREDENTIALS)
 	}
 
+	ctx := context.Background()
 	opt := option.WithServiceAccountFile(keyfile)
-	client, err := storage.NewClient(context.Background(), opt)
+	client, err := storage.NewClient(ctx, opt)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	src, err := readerForPath(os.Args[1], client)
+	src, err := readerForPath(os.Args[1], client, ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer src.Close()
 
-	dest, err := writerForPath(os.Args[2], client)
+	dest, err := writerForPath(os.Args[2], client, ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
