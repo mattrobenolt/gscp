@@ -35,7 +35,10 @@ func writerForPath(path string, client *storage.Client, ctx context.Context) (io
 		return os.Create(path)
 	}
 	bucket, object := splitGsPath(path)
-	return client.Bucket(bucket).Object(object).NewWriter(ctx), nil
+	w := client.Bucket(bucket).Object(object).NewWriter(ctx)
+	// Explicitly disable chunking to send in one request
+	w.ChunkSize = 0
+	return w, nil
 }
 
 func main() {
