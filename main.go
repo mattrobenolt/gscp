@@ -2,15 +2,18 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/option"
 )
 
+const Version = "0.0.0"
 const CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS"
 
 func isGsPath(path string) bool {
@@ -42,6 +45,13 @@ func writerForPath(path string, client *storage.Client, ctx context.Context) (io
 }
 
 func main() {
+	if len(os.Args) == 2 {
+		if os.Args[1] == "--version" || os.Args[1] == "-v" {
+			fmt.Fprintf(os.Stdout, "%s version: %s (%s on %s/%s; %s)\n", os.Args[0], Version, runtime.Version(), runtime.GOOS, runtime.GOARCH, runtime.Compiler)
+			os.Exit(0)
+		}
+	}
+
 	if len(os.Args) != 3 {
 		log.Fatal("!! wrong number of arguments")
 		os.Exit(1)
