@@ -1,0 +1,11 @@
+[[constraint]]
+  name = "cloud.google.com/go"
+  version = "0.24.0"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/api"
+
+[prune]
+  go-tests = true
+  unused-packages = true
