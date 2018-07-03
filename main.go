@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -53,35 +52,40 @@ func main() {
 	}
 
 	if len(os.Args) != 3 {
-		log.Fatal("!! wrong number of arguments")
+		fmt.Fprintln(os.Stderr, "!! wrong number of arguments")
 		os.Exit(1)
 	}
 
 	keyfile := os.Getenv(CREDENTIALS)
 	if keyfile == "" {
-		log.Fatal("!! missing ", CREDENTIALS)
+		fmt.Fprintln(os.Stderr, "!! missing", CREDENTIALS)
+		os.Exit(1)
 	}
 
 	ctx := context.Background()
 	opt := option.WithServiceAccountFile(keyfile)
 	client, err := storage.NewClient(ctx, opt)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
 
 	src, err := readerForPath(os.Args[1], client, ctx)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
 	defer src.Close()
 
 	dest, err := writerForPath(os.Args[2], client, ctx)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
 	defer dest.Close()
 
 	if _, err := io.Copy(dest, src); err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
 }
