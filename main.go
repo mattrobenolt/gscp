@@ -25,6 +25,9 @@ func splitGsPath(path string) (string, string) {
 }
 
 func readerForPath(path string, client *storage.Client, ctx context.Context) (io.ReadCloser, error) {
+	if path == "-" {
+		return os.Stdin, nil
+	}
 	if !isGsPath(path) {
 		return os.Open(path)
 	}
@@ -33,6 +36,9 @@ func readerForPath(path string, client *storage.Client, ctx context.Context) (io
 }
 
 func writerForPath(path string, client *storage.Client, ctx context.Context) (io.WriteCloser, error) {
+	if path == "-" {
+		return os.Stdout, nil
+	}
 	if !isGsPath(path) {
 		return os.Create(path)
 	}
