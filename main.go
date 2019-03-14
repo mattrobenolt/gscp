@@ -15,6 +15,15 @@ import (
 const Version = "1.0.0"
 const CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS"
 
+func newStorageClient(ctx context.Context) (*storage.Client, error) {
+	o := []option.ClientOption{}
+	keyfile := os.Getenv(CREDENTIALS)
+	if keyfile != "" {
+		o = append(o, option.WithServiceAccountFile(keyfile))
+	}
+	return storage.NewClient(ctx, o...)
+}
+
 func isGsPath(path string) bool {
 	return len(path) > 5 && path[:5] == "gs://"
 }
@@ -62,15 +71,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	keyfile := os.Getenv(CREDENTIALS)
-	if keyfile == "" {
-		fmt.Fprintln(os.Stderr, "!! missing", CREDENTIALS)
-		os.Exit(1)
-	}
-
 	ctx := context.Background()
-	opt := option.WithServiceAccountFile(keyfile)
-	client, err := storage.NewClient(ctx, opt)
+	client, err := newStorageClient(ctx)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
