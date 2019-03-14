@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 
@@ -58,17 +59,38 @@ func writerForPath(path string, client *storage.Client, ctx context.Context) (io
 	return w, nil
 }
 
+func printVersion(exitcode int) {
+	prog := path.Base(os.Args[0])
+	fmt.Fprintf(
+		os.Stdout,
+		"%s version: %s (%s on %s/%s; %s)\n",
+		prog, Version, runtime.Version(), runtime.GOOS, runtime.GOARCH, runtime.Compiler,
+	)
+	os.Exit(exitcode)
+}
+
+func printHelp(exitcode int) {
+	prog := path.Base(os.Args[0])
+	fmt.Fprintf(
+		os.Stdout,
+		"usage: %s source_file target_file\n",
+		prog,
+	)
+	os.Exit(exitcode)
+}
+
 func main() {
 	if len(os.Args) == 2 {
-		if os.Args[1] == "--version" || os.Args[1] == "-v" {
-			fmt.Fprintf(os.Stdout, "%s version: %s (%s on %s/%s; %s)\n", os.Args[0], Version, runtime.Version(), runtime.GOOS, runtime.GOARCH, runtime.Compiler)
-			os.Exit(0)
+		switch os.Args[1] {
+		case "--version", "-v":
+			printVersion(0)
+		case "--help", "-h":
+			printHelp(0)
 		}
 	}
 
 	if len(os.Args) != 3 {
-		fmt.Fprintln(os.Stderr, "!! wrong number of arguments")
-		os.Exit(1)
+		printHelp(1)
 	}
 
 	ctx := context.Background()
