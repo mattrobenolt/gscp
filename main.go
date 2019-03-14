@@ -14,11 +14,10 @@ import (
 )
 
 const Version = "1.0.0"
-const CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS"
 
 func newStorageClient(ctx context.Context) (*storage.Client, error) {
 	o := []option.ClientOption{}
-	keyfile := os.Getenv(CREDENTIALS)
+	keyfile := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if keyfile != "" {
 		o = append(o, option.WithServiceAccountFile(keyfile))
 	}
