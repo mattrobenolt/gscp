@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -22,6 +23,17 @@ func newStorageClient(ctx context.Context) (*storage.Client, error) {
 		o = append(o, option.WithServiceAccountFile(keyfile))
 	}
 	return storage.NewClient(ctx, o...)
+}
+
+func getGoogleUploadChunkSize() (int, error) {
+	size := os.Getenv("GOOGLE_UPLOAD_CHUNK_SIZE")
+	if size == "" {
+		// Default to a chunk size of 0, which forces a single chunk
+		// and a single request. This is highly optimized
+		// for small files.
+		return 0, nil
+	}
+	return strconv.Atoi(size)
 }
 
 func isGsPath(path string) bool {
@@ -51,10 +63,13 @@ func writerForPath(path string, client *storage.Client, ctx context.Context) (io
 	if !isGsPath(path) {
 		return os.Create(path)
 	}
+	chunkSize, err := getGoogleUploadChunkSize()
+	if err != nil {
+		return nil, err
+	}
 	bucket, object := splitGsPath(path)
 	w := client.Bucket(bucket).Object(object).NewWriter(ctx)
-	// Explicitly disable chunking to send in one request
-	w.ChunkSize = 0
+	w.ChunkSize = chunkSize
 	return w, nil
 }
 
