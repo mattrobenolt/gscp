@@ -42,6 +42,9 @@ func isGsPath(path string) bool {
 
 func splitGsPath(path string) (string, string) {
 	bits := strings.SplitN(path[5:], "/", 2)
+	if len(bits) == 1 {
+		return bits[0], ""
+	}
 	return bits[0], bits[1]
 }
 
